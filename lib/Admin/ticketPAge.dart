@@ -76,7 +76,11 @@ class _TicketpageState extends State<Ticketpage> {
         'Important':token ['Important'] ?? false ,
         'Ticket': token['Ticket'] ?? 'No Ticket Description',
         'Department': token['Department'] ?? 'No Department',
-        'Status': matchingStatus['Status']=='P' ? 'Pending' : matchingStatus['Status']=='S' ? 'Solved' : matchingStatus['Status']=='C' ? 'Closed': matchingStatus['Status']=='R' ?'Reraised'  : 'No Status',
+        'Status': matchingStatus['Status']=='P' ? 'Pending' :
+                  matchingStatus['Status']=='S' ? 'Solved' :
+                  matchingStatus['Status']=='C' ? 'Closed':
+                  matchingStatus['Status']=='R' ?'Reraised'  :
+                  matchingStatus['Status']=='CM' ?'Completed'  :'No Status',
         'TId': token['TId'],
       });
     }

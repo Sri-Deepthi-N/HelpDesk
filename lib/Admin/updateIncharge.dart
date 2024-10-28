@@ -72,7 +72,7 @@ class _UpdateInchargePageState extends State<UpdateInchargePage> {
       String? id = departments.firstWhere(
               (department) => department['Department'] == dept, // Match by department name
           orElse: () => {'Did': null} // Return a default value if not found
-      )['Did']; // Return the department ID
+      )['Id']; // Return the department ID
       return id; // Return the ID
     } catch (e) {
       print('Error fetching department ID: $e');

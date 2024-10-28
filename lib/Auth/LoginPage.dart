@@ -118,9 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                       if (_formKey.currentState!.validate()) {
                         String enteredUsername = _usernameController.text.trim();
                         String? fetchedEmail = _getEmailForUser(enteredUsername);
-
                         if (fetchedEmail != null) {
-                          // Credentials are correct, proceed with login
                           AuthServices.signinUser(fetchedEmail, password, context);
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(

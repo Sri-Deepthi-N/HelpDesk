@@ -94,7 +94,11 @@ class _AdminHomePageState extends State<AdminHomePage> {
         'Ticket': token['Ticket'] ?? 'No Ticket Description',
         'TId': token['TId'] ?? 'No TId',
         'Department': token['Department'] ?? 'No Department',
-        'Status':matchingStatus['Status']=='P' ? 'Pending' : matchingStatus['Status']=='S' ? 'Solved' : matchingStatus['Status']=='C' ? 'Closed': matchingStatus['Status']=='R' ?'Reraised'  : 'No Status',
+        'Status':matchingStatus['Status']=='P' ? 'Pending' :
+                 matchingStatus['Status']=='S' ? 'Solved' :
+                 matchingStatus['Status']=='C' ? 'Closed':
+                 matchingStatus['Status']=='R' ?'Reraised' :
+                 matchingStatus['Status']=='CM' ?'Completed'  :'No Status',
         'Important':matchingStatus['Important'] ?? false,
         'Ratings': token['Ratings'],
       });

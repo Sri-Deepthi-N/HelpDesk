@@ -232,7 +232,7 @@ class _ChatPageState extends State<ChatPage> {
     List<Map<String, dynamic>> chats = await DatabaseMethods().getChats();
     List<Map<String, dynamic>> currentUserToken = chats.where((token) => token['tid'] == Tid).toList();
     String chatId = randomAlphaNumeric(10);
-  if(_messageController != null){
+  if(_messageController.text != ''){
     if (currentUserToken == null || currentUserToken.isEmpty) {
       Map<String, dynamic> chatInfo = {
         "AdminId": Aid,

@@ -92,13 +92,21 @@ class _InchrgechatState extends State<Inchrgechat> {
     Map<String, dynamic> statusupdate = {
       'Status': Currstatus  == 'Completed'?'CM':'S',
     };
+    print("MM $Currstatus");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$Currstatus successfully!')),
+    );
+    Currstatus  == 'Solved'? null : Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Incharge(),),);
+    Inchrgechat(
+      issueTitle: widget.issueTitle,
+      Tid:Tid!,
+      currentUid: currentUid,
+      Status: Status,
+      Aid: Aid,
+    );
     try {
       await DatabaseMethods().updateToken(Tid!, updateddata);
       await DatabaseMethods().updateStatus(Pid!, statusupdate);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$Currstatus successfully!')),
-      );
-      Currstatus  == 'Completed'? Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Incharge(),),) : null;
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error updating Status: $e')),
@@ -227,7 +235,7 @@ class _InchrgechatState extends State<Inchrgechat> {
     List<Map<String, dynamic>> chats = await DatabaseMethods().getChats();
     List<Map<String, dynamic>> currentUserToken = chats.where((token) => token['tid'] == Tid).toList();
     String chatId = randomAlphaNumeric(10);
-    if(_messageController != null){
+    if(_messageController.text!=''){
       if (currentUserToken == null || currentUserToken.isEmpty) {
         Map<String, dynamic> chatInfo = {
           "AdminId": Aid,
@@ -287,7 +295,6 @@ class _InchrgechatState extends State<Inchrgechat> {
               onPressed: () {
                 Navigator.of(context).pop();
                 Currstatus == 'complete' ? _changestatus("Completed"):_changestatus("Solved");
-                Navigator.pushReplacement(context, MaterialPageRoute(builder:(context)=>Incharge()));
               },
               child: Text("$Currstatus"),
             ),

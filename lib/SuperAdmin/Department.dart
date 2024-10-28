@@ -167,10 +167,11 @@ class _DepartmentPageState extends State<DepartmentPage> {
                       await DatabaseMethods().addDepartment(DeptInfo, id).then((value) {
                         _departmentController.clear();
                         selectedInCharges.clear();
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SuperAdmin()));
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Department added successfully')),
                         );
+                        //Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SuperAdmin()));
+
                         _fetchDepartments();
                       });
                     } else if (selectedInCharges.isEmpty) {

@@ -71,7 +71,7 @@ class _DepartmentListPageState extends State<DepartmentListPage> {
                     departments[index]['Status'] = value;
                   });
                   await DatabaseMethods().updateDepartment(
-                    departments[index]['Did'],
+                    departments[index]['Id'],
                     {'Status': value},
                   );
                   ScaffoldMessenger.of(context).showSnackBar(
