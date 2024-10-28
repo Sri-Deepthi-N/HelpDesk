@@ -78,7 +78,7 @@ class _SuperAdminHomePageState extends State<SuperAdminHomePage> {
         title: Text('Welcome ${currentUsername ?? 'User'}'),
       ),
       body: Padding(
-        padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.05), // Dynamic padding
+        padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.05),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -177,7 +177,7 @@ class _SuperAdminHomePageState extends State<SuperAdminHomePage> {
           Text(
             label,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: MediaQuery.of(context).textScaleFactor * 16), // Dynamic text size
+            style: TextStyle(fontSize: MediaQuery.of(context).textScaleFactor * 16),
           ),
         ],
       ),

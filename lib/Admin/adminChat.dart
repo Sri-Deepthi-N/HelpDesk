@@ -6,7 +6,7 @@ import 'package:random_string/random_string.dart';
 
 class Adminchat extends StatefulWidget {
   final String issueTitle;
-  final String Tid; // Add Tid as a final variable to ChatPage
+  final String Tid;
   final currentUid;
   final Status;
   final Aid;
@@ -19,15 +19,16 @@ class Adminchat extends StatefulWidget {
 
 class _AdminchatState extends State<Adminchat> {
   final TextEditingController _messageController = TextEditingController();
-  List<Widget> _chatMessages = []; // To hold chat message widgets
+  List<Widget> _chatMessages = [];
   String? currentUid;
   String? Tid;
   List<String> Iid = [];
   String? Aid;
-  String? Did; // Declare Did to store Department ID
+  String? Did;
   String? Cid;
   String? Status;
   bool? Imp;
+
   @override
   void initState() {
     super.initState();
@@ -48,14 +49,32 @@ class _AdminchatState extends State<Adminchat> {
 
       setState(() {
         if (currentUserToken.isNotEmpty) {
-          Did = currentUserToken[0]['Did']; // Extract Did from the first token
+          Did = currentUserToken[0]['Did'];
         } else {
-          Did = null; // Reset Did if no token is found
+          Did = null;
         }
       });
     } catch (e) {
       setState(() {
-        Did = null; // Reset Did on error
+        Did = null;
+      });
+    }
+  }
+
+  Future<void> _fetchDepartments() async {
+    try {
+      List<Map<String, dynamic>> departments = await DatabaseMethods().getDepartment();
+      List<Map<String, dynamic>> currentUserDept = departments.where((dept) => dept['Id'] == Did).toList();
+      setState(() {
+        if (currentUserDept.isNotEmpty) {
+          Iid = currentUserDept[0]['Iid'];
+        } else {
+          Iid = [];
+        }
+      });
+    } catch (e) {
+      setState(() {
+        Iid = [];
       });
     }
   }
@@ -64,7 +83,7 @@ class _AdminchatState extends State<Adminchat> {
     List<Map<String, dynamic>> status = await DatabaseMethods().getStatusList();
     Map<String, dynamic> record = status.firstWhere(
           (item) => item['Pid'] == Tid,
-      orElse: () => {}, // Default to an empty map if Tid is not found
+      orElse: () => {},
     );
     String? Pid = record.isNotEmpty ? record['SId'] as String? : null;
     Map<String, dynamic> statusupdate = {
@@ -75,20 +94,19 @@ class _AdminchatState extends State<Adminchat> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Reraised successfully!')),
       );
-
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Adminpage()));
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating password: $e')),
+        SnackBar(content: Text('Error Reraising: $e')),
       );
     }
-
   }
 
   Future<void> _MarkasImportant() async {
     List<Map<String, dynamic>> status = await DatabaseMethods().getStatusList();
     Map<String, dynamic> record = status.firstWhere(
           (item) => item['Pid'] == Tid,
-      orElse: () => {}, // Default to an empty map if Tid is not found
+      orElse: () => {},
     );
     String? Pid = record.isNotEmpty ? record['SId'] as String? : null;
     Map<String, dynamic> statusupdate = {
@@ -106,24 +124,6 @@ class _AdminchatState extends State<Adminchat> {
     } finally {
 
       setState(() {});
-    }
-  }
-
-  Future<void> _fetchDepartments() async {
-    try {
-      List<Map<String, dynamic>> departments = await DatabaseMethods().getDepartment();
-      List<Map<String, dynamic>> currentUserDept = departments.where((dept) => dept['Id'] == Did).toList();
-      setState(() {
-        if (currentUserDept.isNotEmpty) {
-          Iid = currentUserDept[0]['Iid']; // Extract Iid from the found department
-        } else {
-          Iid = []; // Reset Iid if no matching department is found
-        }
-      });
-    } catch (e) {
-      setState(() {
-        Iid = [];
-      });
     }
   }
 
@@ -259,7 +259,7 @@ class _AdminchatState extends State<Adminchat> {
           "Cid": chatId,
           "ChatDate": DateTime.now(),
           "InchargeId": Iid,
-          "Tid": Tid ?? "DefaultTid", // Use Tid from the widget
+          "Tid": Tid ?? "DefaultTid",
           "ChatBy": currentUid,
         };
         await DatabaseMethods().addChats(chatInfo, chatId);
@@ -321,7 +321,6 @@ class _AdminchatState extends State<Adminchat> {
       },
     );
   }
-
 
 
   @override

@@ -58,7 +58,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   Future<void> _changePasswordindb() async {
     if (_newPasswordController.text != null) {
       setState(() {
-        isLoading = true; // Start loading
+        isLoading = true;
       });
       Map<String, dynamic> updatedPassword = {
         'password': _newPasswordController.text,
@@ -66,9 +66,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       await _fetchUsers();
 
       try {
-        // Find the user with matching uid
         var user = _users.firstWhere((user) => user['mailId'] == currentUser!.email);
-        // Update password for the found user
         await DatabaseMethods().updateUser(user['uid'], updatedPassword);
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -80,7 +78,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         );
       } finally {
         setState(() {
-          isLoading = false; // End loading
+          isLoading = false;
         });
       }
     } else {
@@ -121,7 +119,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
           );
           return;
         }
-        await _checkOldPassword(); // Check old password before proceeding
+        await _checkOldPassword();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('New passwords do not match')),
@@ -142,7 +140,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         await _changePasswordindb();
         _handleClear();
         Navigator.pushReplacement(context, MaterialPageRoute(
-            builder: (context) => SuperAdmin())); // Use pop to go back
+            builder: (context) => SuperAdmin()));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Password changed successfully!')),
         );
@@ -189,7 +187,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
           icon: Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pushReplacement(context, MaterialPageRoute(
-                builder: (context) => SuperAdmin())); // Navigate back
+                builder: (context) => SuperAdmin()));
           },
         ),
       ),

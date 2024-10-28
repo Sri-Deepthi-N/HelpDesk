@@ -33,6 +33,7 @@ class _InchargeState extends State<Incharge> {
     await _fetchToken();
     _mergeLists();
     await _fetchCurrentUser();
+    allToken();
   }
 
   Future<void> _fetchToken() async {
@@ -71,11 +72,16 @@ class _InchargeState extends State<Incharge> {
         orElse: () => {'Status': 'No Status', 'SolvedOn': 'Not Solved', 'ClosedOn': 'Not Closed'},
       );
       mergedList.add({
-        'Problem': token['Problem'] ?? 'No Problem Description',
+        'Ticket': token['Ticket'] ?? 'No Ticket Description',
         'Department': token['Department'] ?? 'No Department',
         'TId': token['TId'] ?? 'No TId',
         'Ratings': token['Ratings'],
-        'Status': matchingStatus['Status']=='P' ? 'Pending' : matchingStatus['Status']=='S' ? 'Solved' : matchingStatus['Status']=='C' ? 'Closed': matchingStatus['Status']=='R' ?'Reraised'  : 'No Status',
+        'RaisedOn': token['RaisedOn'],
+        'Status': matchingStatus['Status']=='P' ? 'Pending' :
+                  matchingStatus['Status']=='S' ? 'Solved' :
+                  matchingStatus['Status']=='C' ? 'Closed':
+                  matchingStatus['Status']=='R' ?'Reraised'  :
+                  matchingStatus['Status']=='CM' ?'Completed':'No Status',
       });
     }
   }
@@ -134,27 +140,26 @@ class _InchargeState extends State<Incharge> {
     }
   }
   Widget allToken() {
-    _mergeLists(); // Ensure mergedList is populated
-
+    _mergeLists();
     if (mergedList.isEmpty) {
-      return Center(child: Text('No problems found for this user.'));
+      return Center(child: Text('No Ticket found.'));
     }
-
+    mergedList.sort((a, b) => a["RaisedOn"].compareTo(b["RaisedOn"]));
     return ListView.builder(
       itemCount: mergedList.length,
       itemBuilder: (context, index) {
         var item = mergedList[index];
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-          child: Column( // Use Column to stack the elements vertically
-            crossAxisAlignment: CrossAxisAlignment.start, // Align items to start
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween, // Adjust alignment as needed
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: Text(
-                      item["Problem"],
+                      item["Ticket"],
                       style: const TextStyle(
                         color: Colors.black,
                         fontSize: 18,
@@ -178,7 +183,7 @@ class _InchargeState extends State<Incharge> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => Inchrgechat(
-                            issueTitle: item["Problem"],
+                            issueTitle: item["Ticket"],
                             Tid: item['TId'],
                             currentUid: currentUid,
                             Status: item['Status'],
@@ -198,15 +203,13 @@ class _InchargeState extends State<Incharge> {
                 ],
               ),
               SizedBox(height: 10),
-              if (item["Status"] == 'Closed') // Check if the status is 'Closed'
+              if (item["Status"] == 'Closed')
                 Row(
                   children: [
                     StarRating(
-                      rating: (item['Ratings']).toDouble(), // Convert rating to double
+                      rating: (item['Ratings']).toDouble(),
                     ),
-
                   ],
-
                 ),
               //print(item['Ratings']),
             ],
@@ -272,7 +275,7 @@ class _InchargeState extends State<Incharge> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: const [
                 Text(
-                  'Issues',
+                  'Ticket',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,

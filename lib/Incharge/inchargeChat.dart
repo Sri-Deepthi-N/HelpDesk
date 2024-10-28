@@ -6,7 +6,7 @@ import 'package:intl/intl.dart'; // For date formatting
 
 class Inchrgechat extends StatefulWidget {
   final String issueTitle;
-  final String Tid; // Add Tid as a final variable to ChatPage
+  final String Tid;
   final currentUid;
   final Status;
   final Aid;
@@ -17,7 +17,7 @@ class Inchrgechat extends StatefulWidget {
 
 class _InchrgechatState extends State<Inchrgechat> {
   final TextEditingController _messageController = TextEditingController();
-  List<Widget> _chatMessages = []; // To hold chat message widgets
+  List<Widget> _chatMessages = [];
   String? currentUid;
   String? Tid;
   List<String> Iid = [];
@@ -28,7 +28,6 @@ class _InchrgechatState extends State<Inchrgechat> {
   @override
   void initState() {
     super.initState();
-
     currentUid=widget.currentUid;
     Tid = widget.Tid;
     Aid =widget.Aid;
@@ -36,7 +35,6 @@ class _InchrgechatState extends State<Inchrgechat> {
     _fetchDepartments();
     _fetchToken();
     _displayMessages();
-    print(currentUid);
   }
 
 
@@ -47,37 +45,33 @@ class _InchrgechatState extends State<Inchrgechat> {
 
       setState(() {
         if (currentUserToken.isNotEmpty) {
-          Did = currentUserToken[0]['Did']; // Extract Did from the first token
+          Did = currentUserToken[0]['Did'];
         } else {
-          Did = null; // Reset Did if no token is found
+          Did = null;
         }
       });
     } catch (e) {
       setState(() {
-        Did = null; // Reset Did on error
+        Did = null;
       });
     }
   }
 
   Future<void> _fetchDepartments() async {
     try {
-      // Fetch the list of departments from the database
       List<Map<String, dynamic>> departments = await DatabaseMethods().getDepartment();
-
-      // Find the department that matches the current Did
       List<Map<String, dynamic>> currentUserDept = departments.where((dept) => dept['Id'] == Did).toList();
       print(currentUid);
       setState(() {
         if (currentUserDept.isNotEmpty) {
-          Iid = currentUserDept[0]['Iid']; // Extract Iid from the found department
+          Iid = currentUserDept[0]['Iid'];
         } else {
-          Iid = []; // Reset Iid if no matching department is found
+          Iid = [];
         }
       });
     } catch (e) {
-      // Handle any errors that occur during fetching
       setState(() {
-        Iid = []; // Reset Iid on error
+        Iid = [];
       });
     }
   }
@@ -88,7 +82,7 @@ class _InchrgechatState extends State<Inchrgechat> {
     List<Map<String, dynamic>> status = await DatabaseMethods().getStatusList();
     Map<String, dynamic> record = status.firstWhere(
           (item) => item['Pid'] == Tid,
-      orElse: () => {}, // Default to an empty map if Tid is not found
+      orElse: () => {},
     );
     String? Pid = record.isNotEmpty ? record['SId'] as String? : null;
     Map<String, dynamic> updateddata = {
@@ -96,17 +90,18 @@ class _InchrgechatState extends State<Inchrgechat> {
       'ClosedBy' :currentUid,
     };
     Map<String, dynamic> statusupdate = {
-      'Status': Currstatus  == 'Closed'?'C':'S',
+      'Status': Currstatus  == 'Completed'?'CM':'S',
     };
     try {
       await DatabaseMethods().updateToken(Tid!, updateddata);
       await DatabaseMethods().updateStatus(Pid!, statusupdate);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Updated $Currstatus successfully!')),
+        SnackBar(content: Text('$Currstatus successfully!')),
       );
+      Currstatus  == 'Completed'? Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Incharge(),),) : null;
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating password: $e')),
+        SnackBar(content: Text('Error updating Status: $e')),
       );
     }
   }
@@ -126,13 +121,12 @@ class _InchrgechatState extends State<Inchrgechat> {
     chats.where((token) => token['tid'] == Tid).toList();
 
     if (currentUserToken.isEmpty) {
-      print("No chat found for the given Tid. Creating a new chat.");
+      print("No chat found. Creating a new chat.");
       await _sendMessages;
       return;
     }
     Cid = currentUserToken[0]['cid'];
 
-    // Sort messages by 'time' field
     List<Map<String, dynamic>> sortedMessages = List<Map<String, dynamic>>.from(
         currentUserToken[0]['messages']);
     sortedMessages.sort((a, b) => a['time'].compareTo(b['time']));
@@ -142,7 +136,6 @@ class _InchrgechatState extends State<Inchrgechat> {
     for (var message in sortedMessages) {
       bool isSender = message['sentBy'] == currentUid;
       bool isAdmin = message['sentBy'] == Aid;
-      print(Iid);
       messagesWidgets.add(
         Align(
           alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
@@ -196,8 +189,8 @@ class _InchrgechatState extends State<Inchrgechat> {
                         alignment:
                         isSender ? Alignment.centerRight : Alignment.centerLeft,
                         child: Text(
-                          '${DateFormat('yyyy-MM-dd').format(message['time'].toDate())}\n${DateFormat('hh:mm a').format(message['time'].toDate())
-                          }',
+                          '${DateFormat('yyyy-MM-dd').format(message['time'].toDate())}\n'
+                          '${DateFormat('hh:mm a').format(message['time'].toDate())}',
                           style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                         ),
                       ),
@@ -241,7 +234,7 @@ class _InchrgechatState extends State<Inchrgechat> {
           "Cid": chatId,
           "ChatDate": DateTime.now(),
           "InchargeId": Iid,
-          "Tid": Tid ?? "DefaultTid", // Use Tid from the widget
+          "Tid": Tid ?? "DefaultTid",
           "ChatBy": currentUid,
         };
         await DatabaseMethods().addChats(chatInfo, chatId);
@@ -293,7 +286,7 @@ class _InchrgechatState extends State<Inchrgechat> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                Currstatus == 'close' ? _changestatus("Closed"):_changestatus("Solved");
+                Currstatus == 'complete' ? _changestatus("Completed"):_changestatus("Solved");
                 Navigator.pushReplacement(context, MaterialPageRoute(builder:(context)=>Incharge()));
               },
               child: Text("$Currstatus"),
@@ -372,8 +365,8 @@ class _InchrgechatState extends State<Inchrgechat> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () => Status == 'Pending' || Status == 'Reraised' || Status == 'Solved' ?_handleTicketStatus('close') : null,
-                  child: Text('Closed'),
+                  onPressed: () => Status == 'Pending' || Status == 'Reraised' || Status == 'Solved' ?_handleTicketStatus('complete') : null,
+                  child: Text('Completed'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 25),
                     textStyle: TextStyle(fontSize: 16),

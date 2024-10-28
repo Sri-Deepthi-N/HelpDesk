@@ -54,7 +54,7 @@ class _ReportPageState extends State<ReportPage> {
     }
   }
 
-  final List<String> _statuses = ['Pending', 'Solved', 'Closed','Reraised'];
+  final List<String> _statuses = ['Pending', 'Solved', 'Closed','Completed','Reraised'];
 
   Future<void> _selectFromDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -223,7 +223,7 @@ class _ReportPageState extends State<ReportPage> {
       children: [
         Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         Container(
-          width: double.infinity, // Set width to fill available space
+          width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.black),
@@ -234,7 +234,7 @@ class _ReportPageState extends State<ReportPage> {
             value: value,
             onChanged: onChanged,
             hint: Text('Select $label'),
-            underline: SizedBox(), // Remove the underline
+            underline: SizedBox(),
             items: items,
           ),
         ),
@@ -254,7 +254,7 @@ class _ReportPageState extends State<ReportPage> {
         GestureDetector(
           onTap: onTap,
           child: Container(
-            width: double.infinity, // Set width to fill available space
+            width: double.infinity,
             padding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
             decoration: BoxDecoration(
               border: Border.all(color: Colors.black),

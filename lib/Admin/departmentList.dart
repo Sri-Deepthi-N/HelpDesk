@@ -31,7 +31,7 @@ class _DepartmentListPageState extends State<DepartmentListPage> {
   @override
   void initState() {
     super.initState();
-    _fetchDepartments(); // Fetch departments when the widget is initialized
+    _fetchDepartments();
   }
 
   Future<void> _fetchDepartments() async {
@@ -60,15 +60,15 @@ class _DepartmentListPageState extends State<DepartmentListPage> {
             actions: <Widget>[
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop(); // Dismiss dialog and cancel
+                  Navigator.of(context).pop();
                 },
                 child: const Text('Cancel'),
               ),
               TextButton(
                 onPressed: () async {
-                  Navigator.of(context).pop(); // Dismiss dialog
+                  Navigator.of(context).pop();
                   setState(() {
-                    departments[index]['Status'] = value; // Disable the department
+                    departments[index]['Status'] = value;
                   });
                   await DatabaseMethods().updateDepartment(
                     departments[index]['Did'],
@@ -87,9 +87,8 @@ class _DepartmentListPageState extends State<DepartmentListPage> {
         },
       );
     } else {
-      // If enabling, no need for confirmation
       setState(() {
-        departments[index]['Status'] = value; // Enable the department
+        departments[index]['Status'] = value;
       });
       DatabaseMethods().updateDepartment(
         departments[index]['Did'],
@@ -135,7 +134,7 @@ class _DepartmentListPageState extends State<DepartmentListPage> {
                 trailing: Switch(
                   value: departments[index]['Status'],
                   onChanged: (bool value) {
-                    _toggleDepartment(index, value); // Call the toggle function
+                    _toggleDepartment(index, value);
                   },
                 ),
               ),

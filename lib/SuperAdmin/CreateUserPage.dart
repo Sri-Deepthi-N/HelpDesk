@@ -4,9 +4,9 @@ import 'package:college/SuperAdmin/superadmin.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
-import 'package:csv/csv.dart'; // CSV parsing package
+import 'package:csv/csv.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart'; // For getting storage directory
+import 'package:permission_handler/permission_handler.dart';
 
 class Createuser extends StatefulWidget {
   const Createuser({Key? key}) : super(key: key);
@@ -16,30 +16,26 @@ class Createuser extends StatefulWidget {
 }
 
 class _CreateuserState extends State<Createuser> {
-  List<Map<String, dynamic>> Data= [];// To store the parsed CSV data
-  // Function to pick a CSV file
+  List<Map<String, dynamic>> Data= [];
   String? selectedFileName;
 
   Future<void> uploadCsvToFirestore() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['csv'],  // Only allow CSV files
+      allowedExtensions: ['csv'],
     );
     if (result != null && result.files.isNotEmpty) {
       setState(() {
-        selectedFileName = result.files.first.name; // Update the file name
+        selectedFileName = result.files.first.name;
       });
       File file = File(result.files.single.path!);
-      // Validate the file extension
       if (file.path.endsWith('.csv')) {
-        // Step 2: Read the CSV file
         String csvData = await file.readAsString();
         List<List<dynamic>> rows = const CsvToListConverter().convert(csvData);
 
-        // Step 3: Prepare data and upload to Firestore
-        for (int i = 0; i < rows.length; i++) { // Start from 1 to skip header
+        for (int i = 0; i < rows.length; i++) {
           Map<String, dynamic> data = {
-            'mailId': rows[i][0], // Replace with actual field names
+            'mailId': rows[i][0],
             'name': rows[i][1],
             'password': rows[i][2],
             'phoneNo': rows[i][3],
@@ -50,7 +46,7 @@ class _CreateuserState extends State<Createuser> {
         }
       } else {
         setState(() {
-          selectedFileName = null; // Reset if no file is selected
+          selectedFileName = null;
         });
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("Selected file is not a CSV file."),
@@ -67,7 +63,6 @@ class _CreateuserState extends State<Createuser> {
     if (await Permission.storage.request().isDenied) {
       await Permission.storage.request();
     }
-    // For Android 11+ (Scoped Storage)
     if (await Permission.manageExternalStorage.isDenied) {
       await Permission.manageExternalStorage.request();
     }
@@ -101,14 +96,12 @@ class _CreateuserState extends State<Createuser> {
     await saveCsvFile(csvData, 'Firestore_UserDetails');
   }
 
-  // Function to show success message
   void _showSuccessSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: Colors.green),
     );
   }
 
-  // Function to show error message
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: Colors.red),
@@ -122,7 +115,6 @@ class _CreateuserState extends State<Createuser> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            // Navigate to the previous page
             Navigator.pushReplacement(
                 context, MaterialPageRoute(builder: (context) => SuperAdmin()));
           },
@@ -136,7 +128,6 @@ class _CreateuserState extends State<Createuser> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 30),
-              // Row for the CSV template title and button
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -157,7 +148,7 @@ class _CreateuserState extends State<Createuser> {
               ),
               const SizedBox(height: 20),
               TextFormField(
-                readOnly: true, // Prevent manual input
+                readOnly: true,
                 decoration: InputDecoration(
                   labelText: 'Selected file',
                   border: OutlineInputBorder(
@@ -166,10 +157,9 @@ class _CreateuserState extends State<Createuser> {
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.attach_file),
                     onPressed: uploadCsvToFirestore,
-                      // Open file picker on click
                   ),
                 ),
-                controller: TextEditingController(text: selectedFileName), // Set the file name as the tex;
+                controller: TextEditingController(text: selectedFileName),
 
               ),
 
@@ -178,11 +168,10 @@ class _CreateuserState extends State<Createuser> {
               Center(
                 child: ElevatedButton(
                   onPressed: () async {
-
                     if (Data != null && Data!.isNotEmpty) {
                       for(int i=0;i<Data.length;i++){
 
-                        AuthServices().signupUser(Data[i]['mailId'],Data[i]['password'],context);
+                        await AuthServices().signupUser(Data[i]['mailId'],Data[i]['password'],context);
                         await FirebaseFirestore.instance.collection('UserDetails').doc(Data[i]['uid']).set(Data[i]);
                       }
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -191,7 +180,6 @@ class _CreateuserState extends State<Createuser> {
                         ),
                       );
 
-                      // Navigate back to SuperAdmin page
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => SuperAdmin()),

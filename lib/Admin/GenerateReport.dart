@@ -24,7 +24,7 @@ class Supergenerate extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: ProblemTablePage(
+      home: TicketTablePage(
         selectedDepartment: selectedDepartment,
         selectedStatus: selectedStatus,
         fromDate: fromDate,
@@ -34,12 +34,12 @@ class Supergenerate extends StatelessWidget {
   }
 }
 
-class ProblemTablePage extends StatefulWidget {
+class TicketTablePage extends StatefulWidget {
   final String selectedDepartment;
   final String selectedStatus;
   final DateTime fromDate;
   final DateTime toDate;
-  ProblemTablePage({
+  TicketTablePage({
     required this.selectedDepartment,
     required this.selectedStatus,
     required this.fromDate,
@@ -47,10 +47,10 @@ class ProblemTablePage extends StatefulWidget {
   });
 
   @override
-  _ProblemTablePageState createState() => _ProblemTablePageState();
+  _TicketTablePageState createState() => _TicketTablePageState();
 }
 
-class _ProblemTablePageState extends State<ProblemTablePage> {
+class _TicketTablePageState extends State<TicketTablePage> {
 
   List<Map<String, dynamic>> _status = [];
   List<Map<String, dynamic>> _token = [];
@@ -96,37 +96,31 @@ class _ProblemTablePageState extends State<ProblemTablePage> {
   }
 
   void _mergeLists() {
-    // Clear the mergedList first
     mergedList.clear();
-
-    // Check if fromDate and toDate are DateTime
     DateTime fromDate;
     DateTime toDate;
-
-    // Assuming widget.fromDate and widget.toDate are DateTime objects
     if (widget.fromDate is DateTime && widget.toDate is DateTime) {
       fromDate = widget.fromDate;
       toDate = widget.toDate.add(Duration(days: 1)); // Include the end date
     } else {
       print("fromDate and toDate must be DateTime objects.");
-      return; // Exit the function if they are not DateTime
+      return;
     }
-
-    // Iterate through each token and find its corresponding status
     for (var token in _token) {
-      // Ensure token and status lists are valid
       if (token['TId'] == null || token['Department'] == null) continue;
       var matchingStatus = _status.firstWhere(
             (status) => status['Pid'] == token['TId'],
         orElse: () => {'Status': 'No Status', 'SolvedOn': 'Not Solved', 'ClosedOn': 'Not Closed'},
       );
 
-      // Ensure that RaisedOn is a Timestamp and not null
       if (token['RaisedOn'] != null && token['RaisedOn'] is Timestamp) {
         DateTime raisedOn = (token['RaisedOn'] as Timestamp).toDate();
         DateTime? solvedOn;
         DateTime? closedOn;
-        String? sts = widget.selectedStatus=='Pending' ? 'P' : widget.selectedStatus=='Solved' ? 'S' : widget.selectedStatus=='Closed' ? 'C': 'R';
+        String? sts = widget.selectedStatus=='Pending' ? 'P' :
+        widget.selectedStatus=='Solved' ? 'S' :
+        widget.selectedStatus=='Closed' ? 'C':
+        widget.selectedStatus=='Completed' ? 'CM':'R';
         if (token['SolvedOn'] != null && token['SolvedOn'] is Timestamp) {
           solvedOn = (token['SolvedOn'] as Timestamp).toDate();
         }
@@ -135,19 +129,24 @@ class _ProblemTablePageState extends State<ProblemTablePage> {
         }
         if (token['Department'] == widget.selectedDepartment &&
             matchingStatus['Status'] == sts &&
-            raisedOn.isAfter(fromDate.subtract(Duration(days: 1))) && // Include the start date
-            raisedOn.isBefore(toDate)) { // toDate is exclusive
+            raisedOn.isAfter(fromDate.subtract(Duration(days: 1))) &&
+            raisedOn.isBefore(toDate)) {
 
           // Add the filtered token to mergedList
           mergedList.add({
             'TId': token['TId'] ?? 'N/A',
-            'Problem': token['Problem'] ?? 'No Problem Description',
+            'Ticket': token['Ticket'] ?? 'No Ticket Description',
             'RaisedOn': DateFormat('dd-MM-yyyy').format(raisedOn),
-            'Status': matchingStatus['Status']=='P' ? 'Pending' : matchingStatus['Status']=='S' ? 'Solved' : matchingStatus['Status']=='C' ? 'Closed': matchingStatus['Status']=='R' ?'Reraised'  : 'No Status',
+            'Status': matchingStatus['Status']=='P' ? 'Pending' :
+                      matchingStatus['Status']=='S' ? 'Solved' :
+                      matchingStatus['Status']=='C' ? 'Closed':
+                      matchingStatus['Status']=='R' ?'Reraised':
+                      matchingStatus['Status']=='CM' ?'Completed'  : 'No Status',
             'SolvedOn': solvedOn != null ? DateFormat('dd-MM-yyyy').format(solvedOn) : 'Not Solved',
             'ClosedOn': closedOn != null ? DateFormat('dd-MM-yyyy').format(closedOn) : 'Not Closed',
           });
         }
+        mergedList.sort((a, b) => a["RaisedOn"].compareTo(b["RaisedOn"]));
       }
     }
   }
@@ -179,10 +178,10 @@ class _ProblemTablePageState extends State<ProblemTablePage> {
 
   String _downloadReport() {
     List<List<dynamic>> csvData = [
-      ['Sl.no', 'Issues', 'Status', 'Raised On', 'Solved On', 'Closed On'],
+      ['Sl.no', 'Ticket', 'Status', 'Raised On', 'Solved On', 'Closed On'],
       ...mergedList.asMap().entries.map((entry) => [
         entry.key + 1, // Sl.no
-        entry.value['Problem'] ?? 'No Problem Description',
+        entry.value['Ticket'] ?? 'No Ticket Description',
         entry.value['Status'] ?? 'No Status',
         entry.value['RaisedOn'] ?? 'Not Raised',
         entry.value['SolvedOn'] ?? 'Not Solved',
@@ -263,7 +262,7 @@ class _ProblemTablePageState extends State<ProblemTablePage> {
                               label: Container(
                                 width: 200,
                                 child: Text(
-                                  'Issues',
+                                  'Ticket',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
@@ -320,18 +319,18 @@ class _ProblemTablePageState extends State<ProblemTablePage> {
                               ),
                             ),
                           ],
-                          rows: mergedList.map((problem) {
-                            int index = mergedList.indexOf(problem);
+                          rows: mergedList.map((ticket) {
+                            int index = mergedList.indexOf(ticket);
                             Color rowColor = (index % 2 == 0) ? Colors.grey[300] ?? Colors.grey : Colors.grey[200] ?? Colors.grey;
                             return DataRow(
                               color: MaterialStateProperty.all(rowColor),
                               cells: [
-                                DataCell(Text((index + 1).toString())), // Serial number
-                                DataCell(Text(problem['Problem'] ?? 'N/A')), // Display 'Problem'
-                                DataCell(Text(problem['Status'] ?? 'N/A')), // Status
-                                DataCell(Text(problem['RaisedOn'] ?? 'N/A')), // RaisedOn
-                                DataCell(Text(problem['SolvedOn'] ?? 'N/A')), // SolvedOn
-                                DataCell(Text(problem['ClosedOn'] ?? 'N/A')), // ClosedOn
+                                DataCell(Text((index + 1).toString())),
+                                DataCell(Text(ticket['Ticket'] ?? 'N/A')),
+                                DataCell(Text(ticket['Status'] ?? 'N/A')),
+                                DataCell(Text(ticket['RaisedOn'] ?? 'N/A')),
+                                DataCell(Text(ticket['SolvedOn'] ?? 'N/A')),
+                                DataCell(Text(ticket['ClosedOn'] ?? 'N/A')),
                               ],
                             );
                           }).toList(),

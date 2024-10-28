@@ -77,7 +77,7 @@ class _UserpageState extends State<Userpage> {
 
       mergedList.add({
         'RaisedOn': token['RaisedOn'] ?? 'Not Raised',
-        'Problem': token['Problem'] ?? 'No Problem Description',
+        'Ticket': token['Ticket'] ?? 'No Ticket Description',
         'Department': token['Department'] ?? 'No Department',
         'Status': matchingStatus['Status'] == 'P' ? 'Pending'
             : matchingStatus['Status'] == 'S' ? 'Solved'
@@ -85,7 +85,7 @@ class _UserpageState extends State<Userpage> {
             : matchingStatus['Status'] == 'R' ? 'Reraised'
             : 'No Status',
         'TId': token['TId'],
-        'Ratings': token['Ratings'], // Initialize rating
+        'Ratings': token['Ratings'],
       });
     }
   }
@@ -145,11 +145,10 @@ class _UserpageState extends State<Userpage> {
   }
 
   Widget allToken() {
-    // Sort the list by the "RaisedOn" field in descending order
     mergedList.sort((a, b) => a["RaisedOn"].compareTo(b["RaisedOn"]));
 
     if (mergedList.isEmpty) {
-      return Center(child: Text('No problems found for this user.'));
+      return Center(child: Text('No Tickets found for this user.'));
     }
 
     return ListView.builder(
@@ -166,7 +165,7 @@ class _UserpageState extends State<Userpage> {
                 children: [
                   Expanded(
                     child: Text(
-                      item["Problem"],
+                      item["Ticket"],
                       style: const TextStyle(
                         color: Colors.black,
                         fontSize: 18,
@@ -190,7 +189,7 @@ class _UserpageState extends State<Userpage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => ChatPage(
-                            issueTitle: item["Problem"],
+                            issueTitle: item["Ticket"],
                             Tid: item['TId'],
                             currentUid: currentUid,
                             Status: item['Status'],
@@ -210,11 +209,11 @@ class _UserpageState extends State<Userpage> {
                 ],
               ),
               SizedBox(height: 10),
-              if (item["Status"] == 'Closed') // Check if the status is 'Closed'
+              if (item["Status"] == 'Closed')
                 Row(
                   children: [
                     StarRating(
-                      rating: (item['Ratings'] ?? 0).toDouble(), // Convert rating to double
+                      rating: (item['Ratings'] ?? 0).toDouble(),
                     ),
                   ],
                 ),
@@ -280,7 +279,7 @@ class _UserpageState extends State<Userpage> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: const [
                 Text(
-                  'Issues',
+                  'Ticket',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,

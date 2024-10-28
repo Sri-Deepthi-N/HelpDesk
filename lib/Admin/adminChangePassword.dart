@@ -121,7 +121,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
           );
           return;
         }
-        await _checkOldPassword(); // Check old password before proceeding
+        await _checkOldPassword();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('New passwords do not match')),
@@ -142,7 +142,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         await _changePasswordindb();
         _handleClear();
         Navigator.pushReplacement(context, MaterialPageRoute(
-            builder: (context) => Adminpage())); // Use pop to go back
+            builder: (context) => Adminpage()));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Password changed successfully!')),
         );
@@ -189,7 +189,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
           icon: Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pushReplacement(context, MaterialPageRoute(
-                builder: (context) => Adminpage())); // Navigate back
+                builder: (context) => Adminpage()));
           },
         ),
       ),
@@ -243,7 +243,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   ElevatedButton(
-                    onPressed: _changePassword, // Call the method directly
+                    onPressed: _changePassword,
                     child: Text('Change Password'),
                   ),
                 ],

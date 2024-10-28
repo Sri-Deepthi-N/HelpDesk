@@ -6,7 +6,7 @@ import 'package:random_string/random_string.dart';
 
 class ChatPage extends StatefulWidget {
   final String issueTitle;
-  final String Tid; // Add Tid as a final variable to ChatPage
+  final String Tid;
   final currentUid;
   final Status;
   final Aid;
@@ -18,14 +18,13 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
 
-  //
   final TextEditingController _messageController = TextEditingController();
-  List<Widget> _chatMessages = []; // To hold chat message widgets
+  List<Widget> _chatMessages = [];
   String? currentUid;
   String? Tid;
   List<String> Iid = [];
   String? Aid;
-  String? Did; // Declare Did to store Department ID
+  String? Did;
   String? Cid;
   String? Status;
 
@@ -36,7 +35,7 @@ class _ChatPageState extends State<ChatPage> {
     currentUid=widget.currentUid;
     Tid = widget.Tid;
     Aid =widget.Aid;
-    Status = widget.Status;// Assign Tid from widget to local variable
+    Status = widget.Status;
     _fetchDepartments();
     _fetchToken();
     _displayMessages();
@@ -49,37 +48,33 @@ class _ChatPageState extends State<ChatPage> {
 
       setState(() {
         if (currentUserToken.isNotEmpty) {
-          Did = currentUserToken[0]['Id']; // Extract Did from the first token
+          Did = currentUserToken[0]['Id'];
         } else {
-          Did = null; // Reset Did if no token is found
+          Did = null;
         }
       });
     } catch (e) {
       setState(() {
-       Did = null; // Reset Did on error
+       Did = null;
       });
     }
   }
 
   Future<void> _fetchDepartments() async {
     try {
-      // Fetch the list of departments from the database
       List<Map<String, dynamic>> departments = await DatabaseMethods().getDepartment();
 
-      // Find the department that matches the current Did
       List<Map<String, dynamic>> currentUserDept = departments.where((dept) => dept['Id'] == Did).toList();
-      // Update the state with the fetched departments and the Incharge ID
       setState(() {
         if (currentUserDept.isNotEmpty) {
-          Iid = currentUserDept[0]['Iid']; // Extract Iid from the found department
+          Iid = currentUserDept[0]['Iid'];
         } else {
-          Iid = []; // Reset Iid if no matching department is found
+          Iid = [];
         }
       });
     } catch (e) {
-      // Handle any errors that occur during fetching
       setState(() {
-        Iid = []; // Reset Iid on error
+        Iid = [];
       });
     }
   }
@@ -93,7 +88,11 @@ class _ChatPageState extends State<ChatPage> {
       orElse: () => {},
     );
     String? Pid = record.isNotEmpty ? record['SId'] as String? : null;
-    Map<String, dynamic> updateddata = {
+    Map<String, dynamic> updateddata = status == "Completed"?
+    {
+        'Ratings' : rating,
+    }:
+    {
       'ClosedOn': DateTime.now(),
       'ClosedBy' :currentUid,
       'Ratings' : rating,
@@ -128,7 +127,6 @@ class _ChatPageState extends State<ChatPage> {
     }
     Cid = currentUserToken[0]['cid'];
 
-    // Sort messages by 'time' field
     List<Map<String, dynamic>> sortedMessages = List<Map<String, dynamic>>.from(currentUserToken[0]['messages']);
     sortedMessages.sort((a, b) => a['time'].compareTo(b['time']));
 
@@ -241,7 +239,7 @@ class _ChatPageState extends State<ChatPage> {
         "Cid": chatId,
         "ChatDate": DateTime.now(),
         "InchargeId": Iid,
-        "Tid": Tid ?? "DefaultTid", // Use Tid from the widget
+        "Tid": Tid ?? "DefaultTid",
         "ChatBy": currentUid,
       };
       await DatabaseMethods().addChats(chatInfo, chatId);
@@ -276,7 +274,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _closeTicket() {
-    double rating = 0.0; // Initialize rating variable
+    double rating = 0.0;
 
     showDialog(
       context: context,
@@ -292,10 +290,10 @@ class _ChatPageState extends State<ChatPage> {
                   SizedBox(height: 20),
                   Text('Rate the ticket:'),
                   StarRating(
-                    rating: rating, // Current rating
+                    rating: rating,
                     onRatingChanged: (newRating) {
                       setState(() {
-                        rating = newRating; // Update rating when changed
+                        rating = newRating;
                       });
                     },
                   ),
@@ -313,7 +311,7 @@ class _ChatPageState extends State<ChatPage> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _changestatus(rating); // Your method to change status
+                _changestatus(rating);
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
@@ -362,7 +360,7 @@ class _ChatPageState extends State<ChatPage> {
                 children: [
                   Expanded(
                     child: GestureDetector(
-                      onTap: _scrollToBottom, // Call the method here
+                      onTap: _scrollToBottom,
                       child: TextField(
                         controller: _messageController,
                         decoration: InputDecoration(
@@ -372,7 +370,7 @@ class _ChatPageState extends State<ChatPage> {
                             borderSide: BorderSide(color: Colors.grey),
                           ),
                         ),
-                        enabled: Status == 'Pending' || Status == 'Reraised', // Enable only if status is 'Pending'
+                        enabled: Status == 'Pending' || Status == 'Reraised',
                       ),
                     ),
                   ),
@@ -387,12 +385,12 @@ class _ChatPageState extends State<ChatPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: ElevatedButton(
-                onPressed: Status == 'Pending' || Status == 'Reraised' ? _closeTicket : null, // Enable only if status is 'Pending'
+                onPressed: Status == 'Closed' ? null : _closeTicket,
                 child: Text('  Close Ticket  '),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   textStyle: TextStyle(fontSize: 16),
-                  backgroundColor: Status == 'Pending' || Status == 'Reraised' ? null : Colors.grey, // Optionally change color if disabled
+                  backgroundColor: Status == 'Closed' ?  Colors.grey: null,
                 ),
               ),
             ),
@@ -419,14 +417,14 @@ class StarRating extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (index) {
-        bool isSelected = index < rating; // Determine if the star is selected
+        bool isSelected = index < rating;
         return IconButton(
           icon: Icon(
             isSelected ? Icons.star : Icons.star_border,
-            color: isSelected ? Colors.yellow : Colors.grey, // Change color based on selection
+            color: isSelected ? Colors.yellow : Colors.grey,
           ),
           onPressed: () {
-            onRatingChanged(index + 1.0); // Call the onRatingChanged with the new rating
+            onRatingChanged(index + 1.0);
           },
         );
       }),

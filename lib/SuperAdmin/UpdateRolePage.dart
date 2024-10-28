@@ -29,7 +29,7 @@ class _UpdateRolePageState extends State<UpdateRolePage> {
   List<Map<String, dynamic>> _users = [];
   String? selectedUser;
   String? selectedRole;
-  bool isLoading = false; // Loading state
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -51,7 +51,7 @@ class _UpdateRolePageState extends State<UpdateRolePage> {
   Future<void> _changeRole() async {
     if (selectedUser != null && selectedRole != null) {
       setState(() {
-        isLoading = true; // Start loading
+        isLoading = true;
       });
       Map<String, dynamic> updatedRole = {
         'role': selectedRole == 'SuperAdmin' ? 'SA': selectedRole == 'Admin' ? 'A' : selectedRole == 'Incharge' ? 'I' : 'U' ,
@@ -70,7 +70,7 @@ class _UpdateRolePageState extends State<UpdateRolePage> {
         );
       } finally {
         setState(() {
-          isLoading = false; // End loading
+          isLoading = false;
         });
       }
     } else {
@@ -90,7 +90,6 @@ class _UpdateRolePageState extends State<UpdateRolePage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            // Clear selections before navigating back
             setState(() {
               selectedUser = null;
               selectedRole = null;
@@ -173,7 +172,7 @@ class _UpdateRolePageState extends State<UpdateRolePage> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 ElevatedButton(
-                  onPressed: isLoading ? null : _changeRole, // Disable button while loading
+                  onPressed: isLoading ? null : _changeRole,
                   child: isLoading
                       ? const CircularProgressIndicator()
                       : const Text('Update'),
@@ -182,8 +181,8 @@ class _UpdateRolePageState extends State<UpdateRolePage> {
                 ElevatedButton(
                   onPressed: () {
                     setState(() {
-                      selectedUser = null; // Clear user selection
-                      selectedRole = null; // Clear role selection
+                      selectedUser = null;
+                      selectedRole = null;
                     });
                   },
                   child: const Text('Cancel'),

@@ -35,7 +35,6 @@ class _DeleteUserScreenState extends State<DeleteUserScreen> {
     }
   }
 
-  // Fetch email based on entered username
   String? _getEmailForUser(String enteredUserName) {
     for (var user in _users) {
       if (user['mailId'] == enteredUserName) {
@@ -85,7 +84,6 @@ class _DeleteUserScreenState extends State<DeleteUserScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            // Navigate to the previous page
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => SuperAdmin()),
@@ -145,7 +143,6 @@ class _DeleteUserScreenState extends State<DeleteUserScreen> {
               Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    // Show confirmation dialog before deletion
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {

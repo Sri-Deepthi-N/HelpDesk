@@ -12,21 +12,20 @@ class Risepage extends StatefulWidget {
 }
 
 class _RisePageState extends State<Risepage> {
-  final TextEditingController _problemController = TextEditingController();
+  final TextEditingController _ticketController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   String? _selectedDepartment;
-  List<Map<String, dynamic>> _departments = []; // List to store department names and IDs
-  String? currentUsername; // To store the current user's username
-  String? currentUid; // To store the current user's uid
+  List<Map<String, dynamic>> _departments = [];
+  String? currentUsername;
+  String? currentUid;
 
   @override
   void initState() {
     super.initState();
-    _fetchDepartments(); // Fetch departments when the widget is initialized
-    _fetchCurrentUser(); // Fetch current logged-in user
+    _fetchDepartments();
+    _fetchCurrentUser();
   }
 
-  // Fetch departments from the database
   Future<void> _fetchDepartments() async {
     try {
       List<Map<String, dynamic>> departments = await DatabaseMethods().getDepartment();
@@ -43,7 +42,7 @@ class _RisePageState extends State<Risepage> {
   Future<String?> _getUserName(String? email) async {
     try {
       if (email == null) return null;
-      List<Map<String, dynamic>> users = await DatabaseMethods().getUser(); // Fetch users from your database
+      List<Map<String, dynamic>> users = await DatabaseMethods().getUser();
       for (var user in users) {
         if (user['mailId'] == email) {
           return user['name'];
@@ -58,7 +57,7 @@ class _RisePageState extends State<Risepage> {
   Future<String?> _getUserid(String? email) async {
     try {
       if (email == null) return null;
-      List<Map<String, dynamic>> users = await DatabaseMethods().getUser(); // Fetch users from your database
+      List<Map<String, dynamic>> users = await DatabaseMethods().getUser();
       for (var user in users) {
         if (user['mailId'] == email) {
           return user['uid'];
@@ -70,12 +69,11 @@ class _RisePageState extends State<Risepage> {
     return null;
   }
 
-  // Fetch current logged-in user from the database
   Future<void> _fetchCurrentUser() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        currentUid = await _getUserid(user.email); // Store the current user's UID
+        currentUid = await _getUserid(user.email);
         currentUsername = await _getUserName(user.email);
       }
     } catch (e) {
@@ -83,19 +81,16 @@ class _RisePageState extends State<Risepage> {
     }
   }
 
-  // Logic to raise the issue
-  void _raiseIssue() {
+  void _raiseTicket() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Issue Raised!')),
+      SnackBar(content: Text('Ticket Raised!')),
     );
   }
 
-  // Validate problem input
-  String? _validateProblem(String value) {
-    return (value.split(' ').length > 20) ? 'Problem must not exceed 20 words.' : null;
+  String? _validateTicket(String value) {
+    return (value.split(' ').length > 20) ? 'Ticket must not exceed 20 words.' : null;
   }
 
-  // Validate description input
   String? _validateDescription(String value) {
     return (value.split(' ').length > 100) ? 'Description must not exceed 100 words.' : null;
   }
@@ -106,15 +101,14 @@ class _RisePageState extends State<Risepage> {
       appBar: AppBar(
         title: Center(
           child: Text(
-            'Raise an Issue',
+            'Raise a Ticket ',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
         leading: IconButton(
-          // Back arrow as the leading icon
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Userpage())); // Navigate back to the previous page
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Userpage()));
           },
         ),
       ),
@@ -124,16 +118,16 @@ class _RisePageState extends State<Risepage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Issue (Max 20 words):',
+              'Ticket (Max 20 words):',
               style: TextStyle(fontSize: 18),
             ),
             SizedBox(height: 5),
             TextField(
-              controller: _problemController,
+              controller: _ticketController,
               maxLines: 2,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
-                errorText: _validateProblem(_problemController.text),
+                errorText: _validateTicket(_ticketController.text),
               ),
               onChanged: (value) {
                 setState(() {});
@@ -163,10 +157,10 @@ class _RisePageState extends State<Risepage> {
             ),
             SizedBox(height: 5),
             Container(
-              width: double.infinity, // Set the width of the dropdown to match other fields
+              width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey), // Add a border to match the text field
+                border: Border.all(color: Colors.grey),
                 borderRadius: BorderRadius.circular(5),
               ),
               child: _departments.isNotEmpty
@@ -178,7 +172,7 @@ class _RisePageState extends State<Risepage> {
                   });
                 },
                 items: _departments
-                    .where((dept) => dept['Status'] == true) // Filter departments where Status is true
+                    .where((dept) => dept['Status'] == true)
                     .map<DropdownMenuItem<String>>((Map<String, dynamic> dept) {
                   return DropdownMenuItem<String>(
                     value: dept['Department'],
@@ -195,21 +189,18 @@ class _RisePageState extends State<Risepage> {
               children: [
                 ElevatedButton(
                   onPressed: () async {
-                    if (_validateProblem(_problemController.text) == null &&
+                    if (_validateTicket(_ticketController.text) == null &&
                         _validateDescription(_descriptionController.text) == null &&
                         _selectedDepartment != null) {
-                      // Get selected department ID
                       String? departmentId = _departments.firstWhere(
                               (dept) => dept['Department'] == _selectedDepartment)['Id'];
 
-                      // Generate unique ID
                       String id = randomAlphaNumeric(10);
                       String id1 = randomAlphaNumeric(10);
 
-                      // Prepare token info
                       Map<String, dynamic> tokenInfo = {
                         "TId": id,
-                        "Problem": _problemController.text,
+                        "Ticket": _ticketController.text,
                         "Description": _descriptionController.text,
                         "Department": _selectedDepartment,
                         "Did": departmentId,
@@ -228,14 +219,12 @@ class _RisePageState extends State<Risepage> {
                         "Status": "P",
                         "Important" :false,
                       };
-                      // Add token to database
                       await DatabaseMethods().addStatus(statusInfo, id1);
                       await DatabaseMethods().addToken(tokenInfo, id).then((value) {
-                        _raiseIssue();
+                        _raiseTicket();
                         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Userpage()));
                       });
                     } else {
-                      // Show error if validation fails
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Please fix the errors before submitting.')),
                       );

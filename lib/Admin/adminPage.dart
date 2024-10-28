@@ -30,7 +30,7 @@ class AdminHomePage extends StatefulWidget {
 }
 
 class _AdminHomePageState extends State<AdminHomePage> {
-  List<String> importantTickets = []; // Track important tickets
+  List<String> importantTickets = [];
   String? currentUsername;
   String? currentUid;
   String? Status;
@@ -91,7 +91,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
       );
       mergedList.add({
         'RaisedOn': token['RaisedOn'] ?? 'Not Raised',
-        'Problem': token['Problem'] ?? 'No Problem Description',
+        'Ticket': token['Ticket'] ?? 'No Ticket Description',
         'TId': token['TId'] ?? 'No TId',
         'Department': token['Department'] ?? 'No Department',
         'Status':matchingStatus['Status']=='P' ? 'Pending' : matchingStatus['Status']=='S' ? 'Solved' : matchingStatus['Status']=='C' ? 'Closed': matchingStatus['Status']=='R' ?'Reraised'  : 'No Status',
@@ -108,7 +108,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
       List<Map<String, dynamic>> users = await DatabaseMethods().getUser(); // Fetch users from your database
       for (var user in users) {
         if (user['mailId'] == email) {
-          return user['name']; // Return the name if email matches
+          return user['name'];
         }
       }
     } catch (e) {
@@ -128,15 +128,16 @@ class _AdminHomePageState extends State<AdminHomePage> {
             (user) => user['role'] == "A",
       );
       if (user != null) {
-        Aid = aid['uid'].toString(); // Assign Aid
-        return user['uid']; // Return the user ID
+        Aid = aid['uid'].toString();
+        return user['uid'];
       }
     }catch (e) {
       print('Error fetching user ID: $e');
     }
     return null;
   }
-  // Method to fetch the current logged-in user and their username
+
+
   Future<void> _fetchCurrentUser() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
@@ -146,7 +147,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
         String? username = await _getUserName(user.email);
         if (mounted) {
           setState(() {
-            currentUsername = username; // Update username and rebuild UI
+            currentUsername = username;
           });
         }
       }
@@ -162,10 +163,10 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
 
   Widget allToken() {
-    _mergeLists(); // Ensure mergedList is populated
+    _mergeLists();
     mergedList.sort((a, b) => a["RaisedOn"].compareTo(b["RaisedOn"]));
     if (mergedList.isEmpty) {
-      return Center(child: Text('No Issues found'));
+      return Center(child: Text('No Ticket found'));
     }
     mergedList.sort((a, b) => a["RaisedOn"].compareTo(b["RaisedOn"]));
 
@@ -175,20 +176,20 @@ class _AdminHomePageState extends State<AdminHomePage> {
         var item = mergedList[index];
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-          child: Column(  // Use Column to stack elements vertically
-            crossAxisAlignment: CrossAxisAlignment.start, // Align items to start
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween, // Adjust alignment as needed
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Icon(
                     item["Important"] == true ? Icons.star : Icons.star_border,
-                    color: item["Important"] == true ? Colors.yellow[600] : Colors.black,
+                    color: item["Important"] == true ? Colors.yellowAccent: Colors.black,
                   ),
                   SizedBox(width: 5),
                   Expanded(
                     child: Text(
-                      item["Problem"],
+                      item["Ticket"],
                       style: const TextStyle(
                         color: Colors.black,
                         fontSize: 18,
@@ -212,7 +213,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => Adminchat(
-                            issueTitle: item["Problem"].toString(),
+                            issueTitle: item["Ticket"].toString(),
                             Tid: item['TId'].toString(),
                             currentUid: currentUid,
                             Status: item['Status'].toString(),
@@ -221,7 +222,6 @@ class _AdminHomePageState extends State<AdminHomePage> {
                           ),
                         ),
                       );
-                      // Call _mergeLists and wrap in setState to trigger a UI rebuild
                       setState(() {
                         _fetchStatus();
                         _mergeLists();
@@ -239,11 +239,11 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 ],
               ),
               SizedBox(height: 10),
-              if (item["Status"] == 'Closed') // Check if the status is 'Closed'
+              if (item["Status"] == 'Closed')
                 Row(
                   children: [
                     StarRating(
-                      rating: (item['Ratings'] ?? 0).toDouble(), // Convert rating to double
+                      rating: (item['Ratings'] ?? 0).toDouble(),
                     ),
                   ],
                 ),
@@ -357,7 +357,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: const [
                 Text(
-                  'Issues',
+                  'Ticket',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,

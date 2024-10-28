@@ -64,7 +64,6 @@ class _InchargemyticketState extends State<Inchargemyticket> {
   void _mergeLists() {
     mergedList.clear();
     for (var token in _token) {
-      // Check if the token belongs to the current user
       if (token['uid'] != currentUid) continue;
 
       if (token['TId'] == null || token['Department'] == null) continue;
@@ -74,9 +73,13 @@ class _InchargemyticketState extends State<Inchargemyticket> {
       );
       mergedList.add({
         'RaisedOn':token ['RaisedOn'] ?? 'Not Raised' ,
-        'Problem': token['Problem'] ?? 'No Problem Description',
+        'Ticket': token['Ticket'] ?? 'No Ticket Description',
         'Department': token['Department'] ?? 'No Department',
-        'Status': matchingStatus['Status']=='P' ? 'Pending' : matchingStatus['Status']=='S' ? 'Solved' : matchingStatus['Status']=='C' ? 'Closed': matchingStatus['Status']=='R' ?'Reraised'  : 'No Status',
+        'Status': matchingStatus['Status']=='P' ? 'Pending' :
+                  matchingStatus['Status']=='S' ? 'Solved' :
+                  matchingStatus['Status']=='C' ? 'Closed':
+                  matchingStatus['Status']=='R' ? 'Reraised'  :
+                  matchingStatus['Status']=='CM' ? 'Completed' :'No Status',
         'TId': token['TId'],
       });
     }
@@ -86,15 +89,14 @@ class _InchargemyticketState extends State<Inchargemyticket> {
     try {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        String email = user.email ?? ''; // Provide a default value
+        String email = user.email ?? '';
         currentUid = await _getUserId(email);
 
-        // Check if email is non-nullable before passing to _getUserName
         if (user.email != null) {
           String? username = await _getUserName(user.email!);
           if (mounted) {
             setState(() {
-              currentUsername = username; // Update username and rebuild UI
+              currentUsername = username;
             });
           }
         }
@@ -129,8 +131,8 @@ class _InchargemyticketState extends State<Inchargemyticket> {
             (user) => user['role'] == "A",
       );
       if (user != null) {
-        Aid = aid['uid'].toString(); // Assign Aid
-        return user['uid']; // Return the user ID
+        Aid = aid['uid'].toString();
+        return user['uid'];
       }
     } catch (e) {
       print('Error fetching user ID: $e');
@@ -139,10 +141,9 @@ class _InchargemyticketState extends State<Inchargemyticket> {
   }
 
   Widget allToken() {
-    _mergeLists(); // Ensure mergedList is populated
-
+    _mergeLists();
     if (mergedList.isEmpty) {
-      return Center(child: Text('No Issuess found.'));
+      return Center(child: Text('No Ticket found.'));
     }
     mergedList.sort((a, b) => a["RaisedOn"].compareTo(b["RaisedOn"]));
     return ListView.builder(
@@ -156,7 +157,7 @@ class _InchargemyticketState extends State<Inchargemyticket> {
             children: [
               Expanded(
                 child: Text(
-                  item["Problem"],
+                  item["Ticket"],
                   style: const TextStyle(
                     color: Colors.black,
                     fontSize: 18,
@@ -176,11 +177,11 @@ class _InchargemyticketState extends State<Inchargemyticket> {
               ),
               GestureDetector(
                 onTap: () async {
-                  await Navigator.push(
+                  await Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                       builder: (context) => Inchrgechat(
-                        issueTitle: item["Problem"].toString(),
+                        issueTitle: item["Ticket"].toString(),
                         Tid: item['TId'].toString(),
                         currentUid: currentUid,
                         Status: item['Status'].toString(),
@@ -188,7 +189,6 @@ class _InchargemyticketState extends State<Inchargemyticket> {
                       ),
                     ),
                   );
-                  // Call _mergeLists and wrap in setState to trigger a UI rebuild
                   setState(() {
                     _fetchStatus();
                     _mergeLists();
@@ -234,7 +234,7 @@ class _InchargemyticketState extends State<Inchargemyticket> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: const [
                 Text(
-                  'Issues',
+                  'Ticket',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,

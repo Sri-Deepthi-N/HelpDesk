@@ -29,12 +29,11 @@ class _UpdateInchargePageState extends State<UpdateInchargePage> {
   List<Map<String, dynamic>> _departments = [];
   List<String> selectedInCharges = [];
   List<String> _incharges = [];
-  String? _selectedDepartment; // This holds the ID of the selected department
-
+  String? _selectedDepartment;
   @override
   void initState() {
     super.initState();
-    _fetchDepartments(); // Fetch departments when the widget is initialized
+    _fetchDepartments();
     _getIncharges();
   }
 
@@ -179,7 +178,7 @@ class _UpdateInchargePageState extends State<UpdateInchargePage> {
                     ),
                   );
                 }).toList(),
-                onChanged: (_) {}, // No action needed here as we're managing the selection in CheckboxListTile
+                onChanged: (_) {},
               )
             ),
             const SizedBox(height: 20),
@@ -189,25 +188,19 @@ class _UpdateInchargePageState extends State<UpdateInchargePage> {
                 ElevatedButton(
                   onPressed: () async {
                     if (_selectedDepartment != null && selectedInCharges  != null) {
-                      // Prepare department info to update
                       Map<String, dynamic> deptInfo = {
                         'Iid': selectedInCharges, // Set the new in-charge
                       };
 
-                      // Get the department ID
                       String? deptId = await _getId(_selectedDepartment!);
                       if (deptId != null) {
-                        // Perform the update operation here
                         try {
                           await DatabaseMethods().updateDepartment(deptId, deptInfo); // Pass department ID
-                          // Show success message
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Incharge updated successfully!')),
                           );
-                          // Navigate back to the admin page
                           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Adminpage()));
                         } catch (e) {
-                          // Handle any errors during the update
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('Error updating incharge: $e')),
                           );
@@ -233,8 +226,8 @@ class _UpdateInchargePageState extends State<UpdateInchargePage> {
                 ElevatedButton(
                   onPressed: () {
                     setState(() {
-                      _selectedDepartment = null; // Clear department selection
-                      selectedInCharges = []; // Clear incharge selection
+                      _selectedDepartment = null;
+                      selectedInCharges = [];
                     });
                   },
                   child: const Text('Cancel'),

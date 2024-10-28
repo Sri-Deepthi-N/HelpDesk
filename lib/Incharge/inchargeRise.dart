@@ -13,7 +13,7 @@ class Inchargerise extends StatefulWidget {
 }
 
 class _InchargeriseState extends State<Inchargerise> {
-  final TextEditingController _problemController = TextEditingController();
+  final TextEditingController _ticketController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   String? _selectedDepartment;
   List<Map<String, dynamic>> _departments = []; // List to store department names and IDs
@@ -84,16 +84,14 @@ class _InchargeriseState extends State<Inchargerise> {
     }
   }
 
-  // Logic to raise the issue
-  void _raiseIssue() {
+  void _raiseTicket() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Issue Raised!')),
+      SnackBar(content: Text('Ticket Raised!')),
     );
   }
 
-  // Validate problem input
-  String? _validateProblem(String value) {
-    return (value.split(' ').length > 20) ? 'Problem must not exceed 20 words.' : null;
+  String? _validateTicket(String value) {
+    return (value.split(' ').length > 20) ? 'Ticket must not exceed 20 words.' : null;
   }
 
   // Validate description input
@@ -107,7 +105,7 @@ class _InchargeriseState extends State<Inchargerise> {
       appBar: AppBar(
         title: Center(
           child: Text(
-            'Raise an Issue',
+            'Raise a Ticket',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
@@ -125,16 +123,16 @@ class _InchargeriseState extends State<Inchargerise> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Problem (Max 20 words):',
+              'Ticket (Max 20 words):',
               style: TextStyle(fontSize: 18),
             ),
             SizedBox(height: 5),
             TextField(
-              controller: _problemController,
+              controller: _ticketController,
               maxLines: 2,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
-                errorText: _validateProblem(_problemController.text),
+                errorText: _validateTicket(_ticketController.text),
               ),
               onChanged: (value) {
                 setState(() {});
@@ -195,7 +193,7 @@ class _InchargeriseState extends State<Inchargerise> {
               children: [
                 ElevatedButton(
                   onPressed: () async {
-                    if (_validateProblem(_problemController.text) == null &&
+                    if (_validateTicket(_ticketController.text) == null &&
                         _validateDescription(_descriptionController.text) == null &&
                         _selectedDepartment != null) {
                       // Get selected department ID
@@ -209,7 +207,7 @@ class _InchargeriseState extends State<Inchargerise> {
                       // Prepare token info
                       Map<String, dynamic> tokenInfo = {
                         "TId": id,
-                        "Problem": _problemController.text,
+                        "Ticket": _ticketController.text,
                         "Description": _descriptionController.text,
                         "Department": _selectedDepartment,
                         "Did": departmentId,
@@ -232,7 +230,7 @@ class _InchargeriseState extends State<Inchargerise> {
                       await DatabaseMethods().addStatus(statusInfo, id1);
                       print(" DDD $departmentId");
                       await DatabaseMethods().addToken(tokenInfo, id).then((value) {
-                        _raiseIssue();
+                        _raiseTicket();
                         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Incharge()));
                       });
                     } else {

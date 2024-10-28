@@ -3,7 +3,6 @@ import 'package:college/SuperAdmin/superadmin.dart';
 import 'package:flutter/material.dart';
 import 'package:random_string/random_string.dart';
 
-// Example Department Page
 class DepartmentPage extends StatefulWidget {
   @override
   _DepartmentPageState createState() => _DepartmentPageState();
@@ -11,19 +10,18 @@ class DepartmentPage extends StatefulWidget {
 
 class _DepartmentPageState extends State<DepartmentPage> {
   final TextEditingController _departmentController = TextEditingController();
-  List<Map<String, dynamic>> _departments = []; // List to store department names and IDs
-  List<String> _incharges = []; // Change to List<String> for dropdown
+  List<Map<String, dynamic>> _departments = [];
+  List<String> _incharges = [];
   String? selectedInCharge;
   List<String> selectedInCharges = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchDepartments(); // Fetch departments when the widget is initialized
-    _getIncharges(); // Fetch in-charges when the widget is initialized
+    _fetchDepartments();
+    _getIncharges();
   }
 
-  // Fetch departments from the database
   Future<void> _fetchDepartments() async {
     try {
       List<Map<String, dynamic>> departments = await DatabaseMethods()
@@ -39,14 +37,11 @@ class _DepartmentPageState extends State<DepartmentPage> {
     }
   }
 
-  // Fetch users from the database
 
-
-  // Fetch In-Charge users
   Future<void> _getIncharges() async {
     try {
       List<Map<String, dynamic>> users = await DatabaseMethods()
-          .getUser(); // Fetch all users
+          .getUser();
 
       setState(() {
         _incharges = users
@@ -62,7 +57,6 @@ class _DepartmentPageState extends State<DepartmentPage> {
     }
   }
 
-  // Check if department already exists using 'any'
   bool _departmentExists(String departmentName) {
     return _departments.any((department) =>
     department['Department'] == departmentName);
@@ -114,14 +108,14 @@ class _DepartmentPageState extends State<DepartmentPage> {
               ),
               padding: EdgeInsets.symmetric(horizontal: 12.0),
               child: DropdownButton<String>(
-                value: null, // Set null to allow multi-selection without default selection
+                value: null,
                 hint: Text(
                   selectedInCharges.isNotEmpty
-                      ? selectedInCharges.join(', ') // Display selected items
+                      ? selectedInCharges.join(', ')
                       : 'Select In-Charge',
                 ),
                 isExpanded: true,
-                underline: SizedBox(), // Remove the default underline
+                underline: SizedBox(),
                 items: _incharges.map((String inCharge) {
                   return DropdownMenuItem<String>(
                     value: inCharge,
@@ -138,7 +132,6 @@ class _DepartmentPageState extends State<DepartmentPage> {
                                 selectedInCharges.remove(inCharge);
                               }
                             });
-                            // Trigger UI rebuild to update the hint with selected names
                             this.setState(() {});
                           },
                         );
@@ -146,7 +139,7 @@ class _DepartmentPageState extends State<DepartmentPage> {
                     ),
                   );
                 }).toList(),
-                onChanged: (_) {}, // No action needed here as we're managing the selection in CheckboxListTile
+                onChanged: (_) {},
               )
             ),
             SizedBox(height: 20),
@@ -163,14 +156,13 @@ class _DepartmentPageState extends State<DepartmentPage> {
                       return;
                     }
 
-                    // Ensure selectedInCharges are not empty before adding department
                     if (!_departmentExists(departmentName) && selectedInCharges.isNotEmpty) {
                       String id = randomAlphaNumeric(10);
                       Map<String, dynamic> DeptInfo = {
                         "Id": id,
                         "Department": departmentName,
                         "Status": true,
-                        "Iid": selectedInCharges, // Store all selected in-charges
+                        "Iid": selectedInCharges,
                       };
                       await DatabaseMethods().addDepartment(DeptInfo, id).then((value) {
                         _departmentController.clear();
@@ -197,7 +189,7 @@ class _DepartmentPageState extends State<DepartmentPage> {
                 ElevatedButton(
                   onPressed: () {
                     _departmentController.clear();
-                    selectedInCharges.clear(); // Clear selected items on cancel
+                    selectedInCharges.clear();
                   },
                   child: Text('Cancel'),
                 ),
