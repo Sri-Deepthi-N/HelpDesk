@@ -33,7 +33,6 @@ class DatabaseMethods {
           'sentBy': messageDoc['sentBy'].toString(),
         };
       }).toList();
-
       return {
         'adminId': doc['AdminId'].toString(),
         'chatDate': doc['ChatDate'],
@@ -48,6 +47,7 @@ class DatabaseMethods {
     List<Map<String, dynamic>> chats = await Future.wait(chatFutures);
     return chats;
   }
+
   //Update Chat
   Future<void> updateChats(String id, Map<String, dynamic> chatsInfo) async {
     await FirebaseFirestore.instance

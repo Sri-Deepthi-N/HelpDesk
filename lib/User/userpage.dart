@@ -31,7 +31,7 @@ class _UserpageState extends State<Userpage> {
   }
 
   void getOnTheLoad() async {
-    await _fetchStatus();
+    _fetchStatus();
     await _fetchToken();
     await _fetchCurrentUser();
     _mergeLists();
@@ -50,17 +50,17 @@ class _UserpageState extends State<Userpage> {
     }
   }
 
-  Future<void> _fetchStatus() async {
-    try {
-      List<Map<String, dynamic>> status = await DatabaseMethods().getStatusList();
+  void _fetchStatus() async {
+    FirebaseFirestore.instance
+        .collection('Status')
+        .snapshots()
+        .listen((statusSnapshot) {
       setState(() {
-        _status = status;
+        _status = statusSnapshot.docs
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .toList();
       });
-    } catch (e) {
-      setState(() {
-        _status = [{'Status': 'Error loading status', 'Did': null}];
-      });
-    }
+    });
   }
 
   void _mergeLists() {

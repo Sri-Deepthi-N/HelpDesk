@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:college/Auth/AuthFunctions.dart';
 import 'package:college/Database/Database.dart';
 import 'package:college/Incharge/InchargeMyTicket.dart';
@@ -29,7 +30,7 @@ class _InchargeState extends State<Incharge> {
 
   }
   void getOnTheLoad() async {
-    await _fetchStatus();
+    _fetchStatus();
     await _fetchToken();
     _mergeLists();
     await _fetchCurrentUser();
@@ -49,17 +50,17 @@ class _InchargeState extends State<Incharge> {
     }
   }
 
-  Future<void> _fetchStatus() async {
-    try {
-      List<Map<String, dynamic>> status = await DatabaseMethods().getStatusList();
+  void _fetchStatus() async {
+    FirebaseFirestore.instance
+        .collection('Status')
+        .snapshots()
+        .listen((statusSnapshot) {
       setState(() {
-        _status = status;
+        _status = statusSnapshot.docs
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .toList();
       });
-    } catch (e) {
-      setState(() {
-        _status = [{'Status': 'Error loading status', 'Did': null}];
-      });
-    }
+    });
   }
 
 

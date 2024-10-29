@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:college/Admin/adminChangePassword.dart';
 import 'package:college/Admin/adminChat.dart';
 import 'package:college/Admin/departmentList.dart';
@@ -48,10 +49,23 @@ class _AdminHomePageState extends State<AdminHomePage> {
   }
 
   void getOnTheLoad() async {
-    await _fetchStatus();
+    _fetchStatus();
     await _fetchToken();
     _mergeLists();
     await _fetchCurrentUser();
+  }
+
+  void _fetchStatus() async {
+    FirebaseFirestore.instance
+      .collection('Status')
+      .snapshots()
+      .listen((statusSnapshot) {
+        setState(() {
+          _status = statusSnapshot.docs
+        .map((doc) => doc.data() as Map<String, dynamic>)
+        .toList();
+      });
+    });
   }
 
   Future<void> _fetchToken() async {
@@ -67,21 +81,8 @@ class _AdminHomePageState extends State<AdminHomePage> {
     }
   }
 
-  Future<void> _fetchStatus() async {
-    try {
-      List<Map<String, dynamic>> status = await DatabaseMethods().getStatusList();
-      setState(() {
-        _status = status;
-      });
-    } catch (e) {
-      setState(() {
-        _status = [{'Status': 'Error loading status', 'Did': null}];
-      });
-    }
-  }
-
-
   void _mergeLists() {
+
     mergedList.clear();
     for (var token in _token) {
       if (token['TId'] == null || token['Department'] == null) continue;
@@ -102,6 +103,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
         'Important':matchingStatus['Important'] ?? false,
         'Ratings': token['Ratings'],
       });
+
     }
   }
 

@@ -1,8 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:college/Database/Database.dart';
 import 'package:college/Incharge/incharge.dart';
 import 'package:flutter/material.dart';
 import 'package:random_string/random_string.dart';
-import 'package:intl/intl.dart'; // For date formatting
+import 'package:intl/intl.dart';
 
 class Inchrgechat extends StatefulWidget {
   final String issueTitle;
@@ -10,14 +11,26 @@ class Inchrgechat extends StatefulWidget {
   final currentUid;
   final Status;
   final Aid;
-  const Inchrgechat({required this.issueTitle, required this.Tid, required this.currentUid, required this.Status,required this.Aid});
+
+
+  const Inchrgechat({
+    required this.issueTitle,
+    required this.Tid,
+    required this.currentUid,
+    required this.Status,
+    required this.Aid
+  });
+
+
   @override
   State<Inchrgechat> createState() => _InchrgechatState();
 }
 
 class _InchrgechatState extends State<Inchrgechat> {
   final TextEditingController _messageController = TextEditingController();
-  List<Widget> _chatMessages = [];
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoading = true;
+  List<Map<String, dynamic>> _messages = [];
   String? currentUid;
   String? Tid;
   List<String> Iid = [];
@@ -25,6 +38,8 @@ class _InchrgechatState extends State<Inchrgechat> {
   String? Did;
   String? Cid;
   String? Status;
+
+
   @override
   void initState() {
     super.initState();
@@ -34,9 +49,16 @@ class _InchrgechatState extends State<Inchrgechat> {
     Status = widget.Status;
     _fetchDepartments();
     _fetchToken();
-    _displayMessages();
+    _fetchMessages();
   }
 
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   Future<void> _fetchToken() async {
     try {
@@ -76,9 +98,7 @@ class _InchrgechatState extends State<Inchrgechat> {
     }
   }
 
-
   Future<void> _changestatus(String Currstatus) async {
-
     List<Map<String, dynamic>> status = await DatabaseMethods().getStatusList();
     Map<String, dynamic> record = status.firstWhere(
           (item) => item['Pid'] == Tid,
@@ -97,13 +117,6 @@ class _InchrgechatState extends State<Inchrgechat> {
       SnackBar(content: Text('$Currstatus successfully!')),
     );
     Currstatus  == 'Solved'? null : Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Incharge(),),);
-    Inchrgechat(
-      issueTitle: widget.issueTitle,
-      Tid:Tid!,
-      currentUid: currentUid,
-      Status: Status,
-      Aid: Aid,
-    );
     try {
       await DatabaseMethods().updateToken(Tid!, updateddata);
       await DatabaseMethods().updateStatus(Pid!, statusupdate);
@@ -114,120 +127,25 @@ class _InchrgechatState extends State<Inchrgechat> {
     }
   }
 
-  final ScrollController _scrollController = ScrollController();
-
-  void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-    }
-  }
-
-
-  void _displayMessages() async {
-    List<Map<String, dynamic>> chats = await DatabaseMethods().getChats();
-    List<Map<String, dynamic>> currentUserToken =
-    chats.where((token) => token['tid'] == Tid).toList();
-
-    if (currentUserToken.isEmpty) {
-      print("No chat found. Creating a new chat.");
-      await _sendMessages;
-      return;
-    }
-    Cid = currentUserToken[0]['cid'];
-
-    List<Map<String, dynamic>> sortedMessages = List<Map<String, dynamic>>.from(
-        currentUserToken[0]['messages']);
-    sortedMessages.sort((a, b) => a['time'].compareTo(b['time']));
-
-    List<Widget> messagesWidgets = [];
-
-    for (var message in sortedMessages) {
-      bool isSender = message['sentBy'] == currentUid;
-      bool isAdmin = message['sentBy'] == Aid;
-      messagesWidgets.add(
-        Align(
-          alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
-          child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: isSender ? Colors.lightBlue[200] : Colors.grey[300],
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(8),
-                topRight: Radius.circular(8),
-                bottomLeft: isSender ? Radius.circular(8) : Radius.circular(0),
-                bottomRight: isSender ? Radius.circular(0) : Radius.circular(8),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (!isSender) ...[
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircleAvatar(
-                        backgroundColor: Colors.white,
-                        child: Icon(
-                          Icons.person,
-                          color: Colors.pinkAccent,
-                        ),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        isAdmin ? 'Admin' : 'User',
-                        style: TextStyle(color: Colors.black),
-                      ),
-                    ],
-                  ),
-                  SizedBox(width: 8),
-                ],
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment:
-                    isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        message['message'],
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      SizedBox(height: 5),
-                      Align(
-                        alignment:
-                        isSender ? Alignment.centerRight : Alignment.centerLeft,
-                        child: Text(
-                          '${DateFormat('yyyy-MM-dd').format(message['time'].toDate())}\n'
-                          '${DateFormat('hh:mm a').format(message['time'].toDate())}',
-                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (isSender) ...[
-                  SizedBox(width: 8),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircleAvatar(
-                        backgroundColor: Colors.white,
-                        child: Icon(Icons.person, color: Colors.green),
-                      ),
-                      SizedBox(height: 5),
-                      Text('My Message', style: TextStyle(color: Colors.black)),
-                    ],
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
+  void _fetchMessages() async {
+    FirebaseFirestore.instance
+        .collection('Chats')
+        .doc(Tid)
+        .collection('Chat')
+        .orderBy('Time', descending: true)
+        .snapshots()
+        .listen((messagesSnapshot) {
+      setState(() {
+        _messages = messagesSnapshot.docs
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .toList();
+        _isLoading = false;
+      });
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
       );
-    }
-
-    setState(() {
-      _chatMessages = messagesWidgets;
     });
   }
 
@@ -235,7 +153,8 @@ class _InchrgechatState extends State<Inchrgechat> {
     List<Map<String, dynamic>> chats = await DatabaseMethods().getChats();
     List<Map<String, dynamic>> currentUserToken = chats.where((token) => token['tid'] == Tid).toList();
     String chatId = randomAlphaNumeric(10);
-    if(_messageController.text!=''){
+    String msgId = randomAlphaNumeric(10);
+    if(!_messageController.text.trim().isEmpty){
       if (currentUserToken == null || currentUserToken.isEmpty) {
         Map<String, dynamic> chatInfo = {
           "AdminId": Aid,
@@ -245,26 +164,24 @@ class _InchrgechatState extends State<Inchrgechat> {
           "Tid": Tid ?? "DefaultTid",
           "ChatBy": currentUid,
         };
-        await DatabaseMethods().addChats(chatInfo, chatId);
-        String msgId = randomAlphaNumeric(10);
+        await DatabaseMethods().addChats(chatInfo, Tid!);
         Map<String, dynamic> MessageInfo = {
           "Message": _messageController.text,
           "Time": DateTime.now(),
           "sentBy": currentUid,
         };
-        await DatabaseMethods().addMessages(chatId, msgId, MessageInfo);
+       await DatabaseMethods().addMessages(Tid!, msgId, MessageInfo);
         print("Added");
         _messageController.clear();
       } else {
-        String msgId = randomAlphaNumeric(10);
         Map<String, dynamic> MessageInfo = {
           "Message": _messageController.text,
           "Time": DateTime.now(),
           "sentBy": currentUid,
         };
         print("Updated");
+        await DatabaseMethods().addMessages(Tid!, msgId, MessageInfo);
         _messageController.clear();
-        await DatabaseMethods().addMessages(Cid!, msgId, MessageInfo);
       }
     }
     else{
@@ -272,8 +189,6 @@ class _InchrgechatState extends State<Inchrgechat> {
         SnackBar(content: Text('Enter message to send')),
       );
     }
-
-    _displayMessages();
   }
 
 
@@ -304,6 +219,88 @@ class _InchrgechatState extends State<Inchrgechat> {
     );
   }
 
+  Widget _buildMessage(Map<String, dynamic> message) {
+    bool isSender = message['sentBy'] == currentUid;
+    bool isIncharge = message['sentBy'] == Aid;
+
+    return Align(
+      alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: isSender ? Colors.lightBlue[200] : Colors.grey[300],
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(8),
+            topRight: Radius.circular(8),
+            bottomLeft: isSender ? Radius.circular(8) : Radius.circular(0),
+            bottomRight: isSender ? Radius.circular(0) : Radius.circular(8),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            if (!isSender) ...[
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleAvatar(
+                    backgroundColor:Colors.white,
+                    child: Icon(
+                      Icons.person,
+                      color: Colors.pinkAccent,
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    isIncharge ? 'Admin' : 'User',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ],
+              ),
+              SizedBox(width: 8),
+            ],
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    message['Message'],
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  SizedBox(height: 5),
+                  Align(
+                    alignment:
+                    isSender ? Alignment.centerRight : Alignment.centerLeft,
+                    child: Text(
+                      '${DateFormat('yyyy-MM-dd').format(message['Time'].toDate())}\n${DateFormat('hh:mm a').format(message['Time'].toDate())}',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                  )
+                ],
+              ),
+            ),
+            if (isSender) ...[
+              SizedBox(width: 8),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.white,
+                    child: Icon(Icons.person, color: Colors.green),
+                  ),
+                  SizedBox(height: 5),
+                  Text('My Message', style: TextStyle(color: Colors.black)),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -323,20 +320,24 @@ class _InchrgechatState extends State<Inchrgechat> {
       body: Column(
         children: [
           Expanded(
-            child: ListView(
+            child: _isLoading
+                ? Center(child: CircularProgressIndicator())
+                : ListView.builder(
               controller: _scrollController,
-              children: _chatMessages,
-
+              itemCount: _messages.length,
+              reverse: true,
+              itemBuilder: (context, index) {
+                return _buildMessage(_messages[index]);
+              },
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
                 Expanded(
                   child: GestureDetector(
-                    onTap: _scrollToBottom, // Call the method here
+
                     child: TextField(
                       controller: _messageController,
                       decoration: InputDecoration(
@@ -383,7 +384,6 @@ class _InchrgechatState extends State<Inchrgechat> {
               ],
             ),
           ),
-
         ],
       ),
     );
